@@ -1,7 +1,7 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.socketify;
 
-import com.bmdelacruz.connlib.client.Client;
-import com.bmdelacruz.connlib.finder.ServerFinder;
+import com.bmdelacruz.socketify.client.Client;
+import com.bmdelacruz.socketify.finder.ServerFinder;
 
 import java.io.IOException;
 import java.net.*;

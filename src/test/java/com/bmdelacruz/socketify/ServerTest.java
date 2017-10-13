@@ -1,8 +1,8 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.socketify;
 
-import com.bmdelacruz.connlib.finder.FindableServer;
-import com.bmdelacruz.connlib.server.ClientConnection;
-import com.bmdelacruz.connlib.server.Server;
+import com.bmdelacruz.socketify.finder.FindableServer;
+import com.bmdelacruz.socketify.server.ClientConnection;
+import com.bmdelacruz.socketify.server.Server;
 
 import java.io.IOException;
 

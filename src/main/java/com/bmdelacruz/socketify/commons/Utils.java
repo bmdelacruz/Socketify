@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib.commons;
+package com.bmdelacruz.socketify.commons;
 
 import java.net.InetAddress;
 import java.net.InterfaceAddress;

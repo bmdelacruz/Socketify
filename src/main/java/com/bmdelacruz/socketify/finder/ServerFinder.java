@@ -1,6 +1,6 @@
-package com.bmdelacruz.connlib.finder;
+package com.bmdelacruz.socketify.finder;
 
-import com.bmdelacruz.connlib.commons.Utils;
+import com.bmdelacruz.socketify.commons.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

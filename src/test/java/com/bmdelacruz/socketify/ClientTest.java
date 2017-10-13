@@ -1,6 +1,6 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.socketify;
 
-import com.bmdelacruz.connlib.client.Client;
+import com.bmdelacruz.socketify.client.Client;
 
 import java.io.IOException;
 

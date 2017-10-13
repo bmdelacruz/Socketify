@@ -1,7 +1,7 @@
-package com.bmdelacruz.connlib.server;
+package com.bmdelacruz.socketify.server;
 
-import com.bmdelacruz.connlib.commons.PendingData;
-import com.bmdelacruz.connlib.commons.SelectionKeyProcessor;
+import com.bmdelacruz.socketify.commons.PendingData;
+import com.bmdelacruz.socketify.commons.SelectionKeyProcessor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

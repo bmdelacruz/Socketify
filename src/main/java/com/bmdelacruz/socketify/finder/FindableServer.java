@@ -1,7 +1,7 @@
-package com.bmdelacruz.connlib.finder;
+package com.bmdelacruz.socketify.finder;
 
-import com.bmdelacruz.connlib.commons.PendingData;
-import com.bmdelacruz.connlib.server.Server;
+import com.bmdelacruz.socketify.commons.PendingData;
+import com.bmdelacruz.socketify.server.Server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

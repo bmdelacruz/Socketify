@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib.server;
+package com.bmdelacruz.socketify.server;
 
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;

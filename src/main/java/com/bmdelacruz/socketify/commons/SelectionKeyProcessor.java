@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib.commons;
+package com.bmdelacruz.socketify.commons;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
