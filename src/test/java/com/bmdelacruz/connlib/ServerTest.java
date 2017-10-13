@@ -5,7 +5,7 @@ import java.io.IOException;
 public class ServerTest {
     public static void main(String[] args) {
         try {
-            Server server = new Server(10849, 512);
+            FindableServer server = new FindableServer(10849, 10850, 512, 512);
             server.addListener(new Server.Listener() {
                 @Override
                 public void onClientConnect(ClientConnection clientConnection) {
@@ -43,8 +43,15 @@ public class ServerTest {
                     System.out.println("Cannot send message to client.");
                 }
             });
+            server.addListener(new FindableServer.Listener() {
+                @Override
+                public void onFound() {
+                    System.out.println("Server got discovered.");
+                }
+            });
 
             server.start();
+            server.startDiscoverability();
         } catch (IOException e) {
             e.printStackTrace();
         }

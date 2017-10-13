@@ -136,13 +136,11 @@ public class Server {
 
             private ClientConnection endAndReturnConnection(SelectionKey key) {
                 try {
-                    SocketChannel socketChannel = (SocketChannel) key.channel();
-                    clientConnections.remove(socketChannel);
-
                     key.cancel();
                     key.channel().close();
 
-                    return clientConnections.get(socketChannel);
+                    SocketChannel socketChannel = (SocketChannel) key.channel();
+                    return clientConnections.remove(socketChannel);
                 } catch (IOException ignored) {
                     return null;
                 }

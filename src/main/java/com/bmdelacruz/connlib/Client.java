@@ -47,6 +47,10 @@ public class Client {
         return new ClientSelectionKeyProcessor(bufferSize);
     }
 
+    public final boolean isConnected() {
+        return clientThread.isAlive();
+    }
+
     public final void addListener(Listener listener) {
         this.listeners.add(listener);
     }
@@ -67,11 +71,15 @@ public class Client {
         clientThread.start();
     }
 
-    public void disconnect() throws IOException {
+    public final void disconnect() throws IOException {
+        if (!isConnected()) return;
+
         clientThread.interrupt();
     }
 
-    public void sendBytes(byte[] data) throws IOException {
+    public final void sendBytes(byte[] data) throws IOException {
+        if (!isConnected()) return;
+
         ByteBuffer dataBuffer = (ByteBuffer) ByteBuffer.allocate(data.length + 1)
                 .put(data).put((byte) 0x00).flip();
         socketChannel.write(dataBuffer);
