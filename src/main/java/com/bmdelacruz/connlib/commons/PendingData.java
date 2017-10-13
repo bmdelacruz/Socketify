@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.connlib.commons;
 
 import java.util.ArrayList;
 import java.util.Collections;

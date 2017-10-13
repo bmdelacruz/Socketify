@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.connlib.commons;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

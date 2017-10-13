@@ -1,5 +1,7 @@
 package com.bmdelacruz.connlib;
 
+import com.bmdelacruz.connlib.client.Client;
+
 import java.io.IOException;
 
 public class ClientTest {

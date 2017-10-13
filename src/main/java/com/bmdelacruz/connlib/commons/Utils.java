@@ -1,4 +1,4 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.connlib.commons;
 
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -8,13 +8,13 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
-class Utils {
+public class Utils {
     /**
      * Concatenate the contents of the byte arrays on the list.
      * @param arrays The byte arrays to concatenate.
      * @return A new concatenated byte array.
      */
-    static byte[] concatenate(List<byte[]> arrays) {
+    public static byte[] concatenate(List<byte[]> arrays) {
         int totalBytes = 0;
         for (byte[] bytes : arrays)
             totalBytes += bytes.length;
@@ -35,7 +35,7 @@ class Utils {
      * @param byteBuffer The buffer from which the data will be retrieved from.
      * @return A new byte array which contains the data on the ByteBuffer object.
      */
-    static byte[] extractBytesFrom(ByteBuffer byteBuffer) {
+    public static byte[] extractBytesFrom(ByteBuffer byteBuffer) {
         byte[] newData = new byte[byteBuffer.limit()];
         byteBuffer.get(newData);
 
@@ -50,7 +50,7 @@ class Utils {
      *
      * @return The local address of the device.
      */
-    static InetAddress getLocalAddress() {
+    public static InetAddress getLocalAddress() {
         try {
             for (NetworkInterface n : Collections.list(NetworkInterface.getNetworkInterfaces()))
                 if (n.getName().contains("eth") || n.getName().contains("wlan") || n.getName().contains("net"))
@@ -65,7 +65,7 @@ class Utils {
         }
     }
 
-    static InetAddress getBroadcastAddressOf(InetAddress address) {
+    public static InetAddress getBroadcastAddressOf(InetAddress address) {
         try {
             NetworkInterface i = NetworkInterface.getByInetAddress(address);
             for (InterfaceAddress ia : i.getInterfaceAddresses()) {

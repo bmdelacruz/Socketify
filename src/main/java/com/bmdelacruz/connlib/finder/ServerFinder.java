@@ -1,4 +1,6 @@
-package com.bmdelacruz.connlib;
+package com.bmdelacruz.connlib.finder;
+
+import com.bmdelacruz.connlib.commons.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

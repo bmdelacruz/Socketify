@@ -1,5 +1,9 @@
 package com.bmdelacruz.connlib;
 
+import com.bmdelacruz.connlib.finder.FindableServer;
+import com.bmdelacruz.connlib.server.ClientConnection;
+import com.bmdelacruz.connlib.server.Server;
+
 import java.io.IOException;
 
 public class ServerTest {

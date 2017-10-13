@@ -1,5 +1,8 @@
 package com.bmdelacruz.connlib;
 
+import com.bmdelacruz.connlib.client.Client;
+import com.bmdelacruz.connlib.finder.ServerFinder;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
