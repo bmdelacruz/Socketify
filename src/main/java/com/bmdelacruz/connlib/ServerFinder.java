@@ -30,6 +30,9 @@ public class ServerFinder {
         broadcastAddress = Utils.getBroadcastAddressOf(localAddress);
     }
 
+    /**
+     * Check whether this instance of ServerFinder is still looking for servers.
+     */
     public boolean isFinding() {
         return isFinding;
     }
@@ -39,6 +42,13 @@ public class ServerFinder {
             this.listener = listener;
     }
 
+    /**
+     * Starts finding servers in the local network.
+     * @param port The port of the server to which the data can be sent.
+     * @param duration The duration to wait for this to receive the server's reply.
+     * @param repeats Number of times this must send out server requests.
+     * @param data The data to be sent to the server during discovery.
+     */
     public void find(final int port, final int duration, final int repeats, final byte[] data) {
         serverFinderThread = new Thread(new Runnable() {
             @Override
@@ -54,7 +64,8 @@ public class ServerFinder {
                     Thread readThread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            listener.onStart();
+                            if (listener != null)
+                                listener.onStart();
 
                             byte[] receivedPacketBuffer = new byte[bufferSize];
                             DatagramPacket receivedPacket = new DatagramPacket(
@@ -67,7 +78,8 @@ public class ServerFinder {
                                     byte[] address = receivedPacket.getAddress().getAddress();
                                     byte[] data = receivedPacket.getData();
 
-                                    listener.onFind(address, data);
+                                    if (listener != null)
+                                        listener.onFind(address, data);
                                 } catch (SocketTimeoutException ignored) {
                                 } catch (IOException e) {
                                     break;
@@ -90,12 +102,16 @@ public class ServerFinder {
                 }
 
                 isFinding = false;
-                listener.onFinish();
+                if (listener != null)
+                    listener.onFinish();
             }
         });
         serverFinderThread.start();
     }
 
+    /**
+     * Stop looking for servers.
+     */
     public void stop() {
         if (isFinding) {
             serverFinderThread.interrupt();

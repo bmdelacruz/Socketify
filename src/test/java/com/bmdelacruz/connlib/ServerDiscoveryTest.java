@@ -39,7 +39,7 @@ public class ServerDiscoveryTest {
                         try {
                             String serverAddress = InetAddress.getByAddress(iterator.next()).getHostAddress();
                             Client client = new Client(10849, serverAddress);
-                            client.addListener(new Client.Listener() {
+                            client.setListener(new Client.Listener() {
                                 @Override
                                 public void onDataReceived(byte[] data) {
                                     System.out.println("Received message from server:\n" + new String(data) + "\n");

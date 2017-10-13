@@ -30,7 +30,7 @@ public class ClientTest {
     public static void main(String[] args) {
         try {
             Client client = new Client(10849);
-            client.addListener(new Client.Listener() {
+            client.setListener(new Client.Listener() {
                 @Override
                 public void onDataReceived(byte[] data) {
                     System.out.println("Received message from server:\n" + new String(data) + "\n");

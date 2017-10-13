@@ -6,19 +6,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class Client {
     private final InetSocketAddress socketAddress;
-    private final ArrayList<Listener> listeners;
     private final int bufferSize;
+
+    private Listener listener;
 
     private SocketChannel socketChannel;
     private Selector selector;
-
     private PendingData pendingData;
 
     private Thread clientThread;
@@ -40,7 +38,6 @@ public class Client {
         this.bufferSize = bufferSize;
 
         socketAddress = new InetSocketAddress(address, portToConnectTo);
-        listeners = new ArrayList<>();
     }
 
     public SelectionKeyProcessor createSelectionKeyProcessor(int bufferSize) {
@@ -51,12 +48,8 @@ public class Client {
         return clientThread.isAlive();
     }
 
-    public final void addListener(Listener listener) {
-        this.listeners.add(listener);
-    }
-
-    public final void removeListener(Listener listener) {
-        this.listeners.remove(listener);
+    public final void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     public final void connect() throws IOException {
@@ -102,11 +95,10 @@ public class Client {
                         SelectionKey key = keys.next();
                         keys.remove();
 
-                        if (!key.isValid()) continue;
-
-                        if (key.isReadable()) {
+                        if (!key.isValid())
+                            continue;
+                        if (key.isReadable())
                             read(key);
-                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -135,9 +127,8 @@ public class Client {
 
         @Override
         public void processCompleteData(SelectionKey key, byte[] data) {
-            for (Listener listener : listeners) {
+            if (listener != null)
                 listener.onDataReceived(data);
-            }
         }
 
         @Override
@@ -146,9 +137,8 @@ public class Client {
                 key.cancel();
                 key.channel().close();
 
-                for (Listener listener : listeners) {
+                if (listener != null)
                     listener.onServerDisconnect();
-                }
             } catch (IOException ignored) {}
         }
 
@@ -158,9 +148,8 @@ public class Client {
                 key.cancel();
                 key.channel().close();
 
-                for (Listener listener : listeners) {
+                if (listener != null)
                     listener.onServerDisconnect();
-                }
             } catch (IOException ignored) {}
         }
     }

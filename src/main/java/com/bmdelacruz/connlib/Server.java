@@ -7,15 +7,17 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class Server {
+    public static final int DEFAULT_BUFFER_SIZE = 1024;
+
     private final InetSocketAddress serverAddress;
-    private final List<Listener> listeners;
     private final int bufferSize;
+
+    private Listener listener;
 
     private Thread serverThread;
     private Selector selector;
@@ -30,28 +32,32 @@ public class Server {
     }
 
     public Server(int port) {
-        this(port, 1024);
+        this(port, DEFAULT_BUFFER_SIZE);
     }
 
     public Server(int port, int bufferSize) {
         this.bufferSize = bufferSize;
 
         serverAddress = new InetSocketAddress(port);
-        listeners = new ArrayList<>();
     }
 
+    /**
+     * Builds a ClientConnection instance.
+     * @param socketChannel The SocketChannel to be associated with the ClientConnection instance.
+     * @return The newly created ClientConnection instance.
+     */
     public ClientConnection createClientConnection(SocketChannel socketChannel) {
         return new ClientConnection(socketChannel);
     }
 
-    public void addListener(Listener listener) {
-        this.listeners.add(listener);
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
-    public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
-    }
-
+    /**
+     * Start listening for client connections.
+     * @throws IOException Thrown when something went wrong while setting up the server.
+     */
     public void start() throws IOException {
         clientConnections = new HashMap<>();
         pendingWrites = new HashMap<>();
@@ -67,12 +73,22 @@ public class Server {
         serverThread.start();
     }
 
+    /**
+     * Stop serving clients.
+     */
     public void stop() {
         this.serverThread.interrupt();
     }
 
-    public boolean sendTo(SocketChannel socketChannel, byte[] data) throws InterruptedException {
-        SelectionKey key = getKeyFor(socketChannel);
+    /**
+     * Sends the data to the specified ClientConnection.
+     * @param clientConnection The client which will receive the data.
+     * @param data The data to be transferred to the client.
+     * @return <code>true</code> if the data was sent to the client.
+     * @throws InterruptedException Thrown when the server was stopped while trying to send the data.
+     */
+    public boolean sendTo(ClientConnection clientConnection, byte[] data) throws InterruptedException {
+        SelectionKey key = getKeyFor(clientConnection.getSocketChannel());
         if (key != null) {
             sendTo(key, data);
             return true;
@@ -92,7 +108,7 @@ public class Server {
             ClientConnection clientConnection = createClientConnection(socketChannel);
             clientConnections.put(socketChannel, clientConnection);
 
-            for (Listener listener : listeners)
+            if (listener != null)
                 listener.onClientConnect(clientConnection);
         }
     }
@@ -171,7 +187,7 @@ public class Server {
 
                     clientConnection.onFailure();
 
-                    for (Listener listener : listeners)
+                    if (listener != null)
                         listener.onClientMessageFailed(clientConnection, e);
                 }
             }

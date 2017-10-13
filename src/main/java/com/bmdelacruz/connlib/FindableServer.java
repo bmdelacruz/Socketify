@@ -1,17 +1,21 @@
 package com.bmdelacruz.connlib;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class FindableServer extends Server {
+    public static final int DEFAULT_DATAGRAM_BUFFER_SIZE = 1024;
+
     private final InetSocketAddress findableAddress;
     private final int datagramBufferSize;
 
@@ -19,36 +23,53 @@ public class FindableServer extends Server {
     private Selector selector;
 
     private HashMap<DatagramChannel, PendingData> pendingWrites;
-    private List<Listener> listeners;
+    private Listener listener;
 
     public interface Listener {
         void onFound();
     }
 
+    public FindableServer(int port, int discoverablePort) {
+        this(port, discoverablePort, DEFAULT_BUFFER_SIZE, DEFAULT_DATAGRAM_BUFFER_SIZE);
+    }
+
     public FindableServer(int port, int discoverablePort, int bufferSize, int datagramBufferSize) {
         super(port, bufferSize);
         this.datagramBufferSize = datagramBufferSize;
-        this.listeners = new ArrayList<>();
 
         findableAddress = new InetSocketAddress(discoverablePort);
     }
 
-    public void addListener(Listener listener) {
-        listeners.add(listener);
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
-    public void removeListener(Listener listener) {
-        listeners.remove(listener);
-    }
-
+    /**
+     * This normally returns the address of the server in bytes (network byte order).
+     * Override this to create a send ServerFinder instances a different data.
+     * @param receivedData The data received by the server.
+     * @return The data to be sent to the ServerFinder instances.
+     */
     public byte[] createReplyData(byte[] receivedData) {
         return findableAddress.getAddress().getAddress();
     }
 
+    /**
+     * The condition which will be checked when the server should reply to the packet
+     * sent by the ServerFinder instances. Override this to change the default condition
+     * which is <code>new String(receivedData).equals("FIND")</code>.
+     * @param receivedData The data received by the server.
+     * @return <code>true</code> if the condition is met.
+     */
     public boolean getReplyCondition(byte[] receivedData) {
         return new String(receivedData).equals("FIND");
     }
 
+    /**
+     * Start the discoverability of this server.
+     * @throws IOException Thrown when something went wrong while setting up the
+     * server's discoverability.
+     */
     public void startDiscoverability() throws IOException {
         pendingWrites = new HashMap<>();
 
@@ -64,6 +85,9 @@ public class FindableServer extends Server {
         findableServerThread.start();
     }
 
+    /**
+     * Stop the discoverability of this server.
+     */
     public void stopDiscoverability() {
         this.findableServerThread.interrupt();
     }
@@ -103,7 +127,7 @@ public class FindableServer extends Server {
 
             key.interestOps(SelectionKey.OP_WRITE);
 
-            for (Listener listener : listeners)
+            if (listener != null)
                 listener.onFound();
         }
     }
