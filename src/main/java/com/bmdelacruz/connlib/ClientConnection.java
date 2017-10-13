@@ -10,7 +10,7 @@ public class ClientConnection {
     public interface Listener {
         void onDataReceived(byte[] data, Messenger messenger);
         void onDisconnected();
-        void onFailure(Exception e);
+        void onFailure();
     }
 
     public interface Messenger {
@@ -42,7 +42,7 @@ public class ClientConnection {
         for (Listener listener : listeners) listener.onDisconnected();
     }
 
-    public void onFailure(Exception e) {
-        for (Listener listener : listeners) listener.onFailure(e);
+    public void onFailure() {
+        for (Listener listener : listeners) listener.onFailure();
     }
 }

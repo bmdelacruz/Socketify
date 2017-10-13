@@ -43,15 +43,19 @@ public class Client {
         listeners = new ArrayList<>();
     }
 
-    public void addListener(Listener listener) {
+    public SelectionKeyProcessor createSelectionKeyProcessor(int bufferSize) {
+        return new ClientSelectionKeyProcessor(bufferSize);
+    }
+
+    public final void addListener(Listener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(Listener listener) {
+    public final void removeListener(Listener listener) {
         this.listeners.remove(listener);
     }
 
-    public void connect() throws IOException {
+    public final void connect() throws IOException {
         selector = Selector.open();
         pendingData = new PendingData();
 
@@ -75,123 +79,7 @@ public class Client {
     }
 
     private void read(SelectionKey key) throws IOException {
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-
-        try {
-            int numOfReadBytes = socketChannel.read(buffer);
-            buffer.flip();
-
-            if (numOfReadBytes == -1) {
-                key.cancel();
-                socketChannel.close();
-                for (Listener listener : listeners)
-                    listener.onServerDisconnect();
-            } else {
-                List<byte[]> pendingDataList = pendingData.getPendingData();
-
-                // for complete unread data but included in buffer together
-                // with the pending data which completes the previous message
-                List<byte[]> completeUnreadDataList = new ArrayList<>();
-                ByteBuffer remainingDataBuffer = null;
-
-                boolean hasCompleteMessage = false;
-                boolean isNullByteFound = false;
-
-                // iterate over the buffer to find '0x00'
-                while (buffer.hasRemaining() && !isNullByteFound) {
-                    // check if the byte at the next position is '0x00'
-                    isNullByteFound = hasCompleteMessage = buffer.get() == (byte) 0x00;
-
-                    if (isNullByteFound) {
-                        remainingDataBuffer = buffer.slice();
-
-                        buffer.reset();
-                        buffer.flip();
-
-                        byte[] newData = Utils.extractBytesFrom(buffer);
-                        if (pendingData.hasPendingData()) {
-                            // CASE 2: Overflowing
-                            // there are pending data and the end of the data is finally
-                            // encountered in the buffer
-
-                            pendingDataList.add(newData);
-
-                            byte[] completeData = Utils.concatenate(pendingDataList);
-                            completeUnreadDataList.add(completeData);
-
-                            // clear pending data list and flag for this socket channel
-                            pendingDataList.clear();
-                            pendingData.setHasPendingData(false);
-                        } else {
-                            // CASE 1: Complete
-                            // the start and the end of the data is in the buffer
-
-                            completeUnreadDataList.add(newData);
-                        }
-                    } else {
-                        buffer.mark();
-                    }
-                }
-
-                if (hasCompleteMessage) {
-                    // CASE 3: Overflowing w/ more data
-                    // there is already a complete message but the buffer may still
-                    // contain more complete or incomplete data
-
-                    boolean isRemNullByteFound = false;
-                    while (remainingDataBuffer != null && remainingDataBuffer.hasRemaining()) {
-                        while (remainingDataBuffer.hasRemaining()) {
-                            isRemNullByteFound = remainingDataBuffer.get() == (byte) 0x00;
-
-                            if (isRemNullByteFound) {
-                                ByteBuffer temp = remainingDataBuffer.slice();
-
-                                remainingDataBuffer.reset();
-                                remainingDataBuffer.flip();
-
-                                byte[] newData = Utils.extractBytesFrom(remainingDataBuffer);
-                                completeUnreadDataList.add(newData);
-
-                                remainingDataBuffer = temp;
-                            } else {
-                                remainingDataBuffer.mark();
-                            }
-                        }
-
-                        if (!isRemNullByteFound) {
-                            remainingDataBuffer.flip();
-
-                            // when the end of the message was not found in the remaining data in buffer
-                            byte[] newData = Utils.extractBytesFrom(remainingDataBuffer);
-                            pendingDataList.add(newData);
-
-                            pendingData.setHasPendingData(true);
-                        }
-                    }
-
-                    for (byte[] data : completeUnreadDataList)
-                        for (Listener listener : listeners)
-                            listener.onDataReceived(data);
-
-                    completeUnreadDataList.clear();
-                } else {
-                    buffer.flip();
-
-                    // when the end of the message was not found in the data in the buffer
-                    byte[] newData = Utils.extractBytesFrom(buffer);
-                    pendingDataList.add(newData);
-
-                    pendingData.setHasPendingData(true);
-                }
-            }
-        } catch (IOException e) {
-            key.cancel();
-            socketChannel.close();
-
-            for (Listener listener : listeners)
-                listener.onServerDisconnect();
-        }
+        createSelectionKeyProcessor(bufferSize).read(key);
     }
 
     private class ClientRunnable implements Runnable {
@@ -224,6 +112,48 @@ public class Client {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public class ClientSelectionKeyProcessor extends SelectionKeyProcessor {
+        public ClientSelectionKeyProcessor(int bufferSize) {
+            super(bufferSize);
+        }
+
+        @Override
+        public List<byte[]> getPendingReadList(SelectionKey key) {
+            return pendingData.getPendingData();
+        }
+
+        @Override
+        public void processCompleteData(SelectionKey key, byte[] data) {
+            for (Listener listener : listeners) {
+                listener.onDataReceived(data);
+            }
+        }
+
+        @Override
+        public void onDisconnect(SelectionKey key) {
+            try {
+                key.cancel();
+                key.channel().close();
+
+                for (Listener listener : listeners) {
+                    listener.onServerDisconnect();
+                }
+            } catch (IOException ignored) {}
+        }
+
+        @Override
+        public void onConnectionFailure(SelectionKey key) {
+            try {
+                key.cancel();
+                key.channel().close();
+
+                for (Listener listener : listeners) {
+                    listener.onServerDisconnect();
+                }
+            } catch (IOException ignored) {}
         }
     }
 }

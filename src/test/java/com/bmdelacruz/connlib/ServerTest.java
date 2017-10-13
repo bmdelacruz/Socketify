@@ -13,9 +13,17 @@ public class ServerTest {
                     clientConnection.addListener(new ClientConnection.Listener() {
                         @Override
                         public void onDataReceived(byte[] data, ClientConnection.Messenger messenger) {
-                            System.out.println("Received data from client:\n" + new String(data) + "\n");
+                            String dataStr = new String(data);
+                            System.out.println("Received data from client:\n" + dataStr + "\n");
 
-                            messenger.reply(data);
+                            switch (dataStr) {
+                                case "1":
+                                    messenger.reply("I like the number 1! <3".getBytes());
+                                    break;
+                                default:
+                                    messenger.reply(data);
+                                    break;
+                            }
                         }
 
                         @Override
@@ -24,7 +32,7 @@ public class ServerTest {
                         }
 
                         @Override
-                        public void onFailure(Exception e) {
+                        public void onFailure() {
                             System.out.println("Client connection stopped unexpectedly.");
                         }
                     });

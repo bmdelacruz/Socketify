@@ -13,22 +13,22 @@ import java.util.List;
 
 public class DiscoverableServer extends Server {
     private final InetSocketAddress discoverableAddress;
-    private final ByteBuffer buffer;
+    private final int datagramBufferSize;
 
     private Thread discoverableServerThread;
     private Selector selector;
 
     private HashMap<DatagramChannel, PendingData> pendingWrites;
 
-    public DiscoverableServer(int port, int discoverablePort, int bufferSize) {
-        super(port);
+    public DiscoverableServer(int port, int discoverablePort, int bufferSize, int datagramBufferSize) {
+        super(port, bufferSize);
+        this.datagramBufferSize = datagramBufferSize;
 
         InetAddress localAddress = getLocalAddress();
         if (localAddress == null)
             throw new IllegalStateException("No network interface available.");
 
         discoverableAddress = new InetSocketAddress(localAddress, discoverablePort);
-        buffer = ByteBuffer.allocate(bufferSize);
     }
 
     public byte[] createReplyData(byte[] receivedData) {
@@ -69,8 +69,9 @@ public class DiscoverableServer extends Server {
 
     private void read(SelectionKey key) throws IOException {
         DatagramChannel datagramChannel = ((DatagramChannel) key.channel());
-        datagramChannel.receive(buffer);
+        ByteBuffer buffer = ByteBuffer.allocate(datagramBufferSize);
 
+        datagramChannel.receive(buffer);
         buffer.flip();
 
         byte[] receivedData = new byte[buffer.limit()];

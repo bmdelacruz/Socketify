@@ -44,10 +44,10 @@ public class ClientTest {
 
             client.connect();
 
-//            client.sendBytes(LOREM_IPSUM_1024.getBytes());
-//            client.sendBytes(LOREM_IPSUM_EX.getBytes());
-//            client.sendBytes(NUMBERS.getBytes());
-//            client.sendBytes(LETTERS.getBytes());
+            client.sendBytes(LOREM_IPSUM_1024.getBytes());
+            client.sendBytes(LOREM_IPSUM_EX.getBytes());
+            client.sendBytes(NUMBERS.getBytes());
+            client.sendBytes(LETTERS.getBytes());
 
             client.sendBytes("1".getBytes());
             client.sendBytes("2".getBytes());
