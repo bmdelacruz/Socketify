@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/connlib.iml" filepath="$PROJECT_DIR$/connlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/socketify.iml" filepath="$PROJECT_DIR$/socketify.iml" />
     </modules>
   </component>
 </project>

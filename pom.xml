@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.bmdelacruz.sessions</groupId>
-    <artifactId>conn-lib</artifactId>
+    <groupId>com.bmdelacruz</groupId>
+    <artifactId>socketify</artifactId>
     <version>0.0.1</version>
 
     <properties>
