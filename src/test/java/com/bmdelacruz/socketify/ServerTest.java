@@ -41,6 +41,11 @@ public class ServerTest {
                         }
                     });
                 }
+
+                @Override
+                public void onClientMessageFailed(ClientConnection clientConnection, Exception e) {
+                    System.out.println("Cannot send message to client.");
+                }
             });
             server.setListener(new FindableServer.Listener() {
                 @Override
