@@ -31,7 +31,6 @@ public class Server {
 
     public interface Listener {
         void onClientConnect(ClientConnection clientConnection);
-        void onClientMessageFailed(ClientConnection clientConnection, Exception e);
     }
 
     public Server(int port) {
@@ -189,9 +188,6 @@ public class Server {
                     clientConnections.remove(socketChannel);
 
                     clientConnection.onFailure();
-
-                    if (listener != null)
-                        listener.onClientMessageFailed(clientConnection, e);
                 }
             }
 
