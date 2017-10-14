@@ -8,9 +8,9 @@ public class ClientConnection {
     private ArrayList<Listener> listeners;
 
     public interface Listener {
-        void onDataReceived(byte[] data, Messenger messenger);
-        void onDisconnected();
-        void onFailure();
+        void onDataReceived(ClientConnection clientConnection, byte[] data, Messenger messenger);
+        void onDisconnected(ClientConnection clientConnection);
+        void onFailure(ClientConnection clientConnection);
     }
 
     public interface Messenger {
@@ -35,14 +35,14 @@ public class ClientConnection {
     }
 
     public void onDataReceived(byte[] data, Messenger messenger) {
-        for (Listener listener : listeners) listener.onDataReceived(data, messenger);
+        for (Listener listener : listeners) listener.onDataReceived(this, data, messenger);
     }
 
     public void onDisconnected() {
-        for (Listener listener : listeners) listener.onDisconnected();
+        for (Listener listener : listeners) listener.onDisconnected(this);
     }
 
     public void onFailure() {
-        for (Listener listener : listeners) listener.onFailure();
+        for (Listener listener : listeners) listener.onFailure(this);
     }
 }

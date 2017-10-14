@@ -16,7 +16,7 @@ public class ServerTest {
                     System.out.println("Client connected.");
                     clientConnection.addListener(new ClientConnection.Listener() {
                         @Override
-                        public void onDataReceived(byte[] data, ClientConnection.Messenger messenger) {
+                        public void onDataReceived(ClientConnection clientConnection, byte[] data, ClientConnection.Messenger messenger) {
                             String dataStr = new String(data);
                             System.out.println("Received data from client:\n" + dataStr + "\n");
 
@@ -31,12 +31,12 @@ public class ServerTest {
                         }
 
                         @Override
-                        public void onDisconnected() {
+                        public void onDisconnected(ClientConnection clientConnection) {
                             System.out.println("Client disconnected.");
                         }
 
                         @Override
-                        public void onFailure() {
+                        public void onFailure(ClientConnection clientConnection) {
                             System.out.println("Client connection stopped unexpectedly.");
                         }
                     });
