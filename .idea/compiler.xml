@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="connlib" />
+        <module name="socketify" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="connlib" target="1.7" />
+      <module name="socketify" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>
