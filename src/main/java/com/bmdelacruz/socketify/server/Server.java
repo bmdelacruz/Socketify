@@ -100,6 +100,12 @@ public class Server {
         }
     }
 
+    public void broadcast(byte[] data) throws InterruptedException {
+        for (ClientConnection clientConnection : clientConnections.values()) {
+            sendTo(clientConnection, data);
+        }
+    }
+
     private void accept(SelectionKey key) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
         SocketChannel socketChannel = serverSocketChannel.accept();
@@ -202,6 +208,9 @@ public class Server {
     }
 
     private void sendTo(SelectionKey key, byte[] data) throws InterruptedException {
+        if (!key.isValid())
+            return;
+
         key.interestOps(SelectionKey.OP_WRITE);
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
