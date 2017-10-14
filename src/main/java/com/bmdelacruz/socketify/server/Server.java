@@ -188,8 +188,6 @@ public class Server {
                     socketChannel.close();
                     clientConnections.remove(socketChannel);
 
-                    clientConnection.onFailure();
-
                     if (listener != null)
                         listener.onClientMessageFailed(clientConnection, e);
                 }
