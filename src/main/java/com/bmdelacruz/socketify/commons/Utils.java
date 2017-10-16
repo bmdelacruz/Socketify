@@ -53,7 +53,8 @@ public class Utils {
     public static InetAddress getLocalAddress() {
         try {
             for (NetworkInterface n : Collections.list(NetworkInterface.getNetworkInterfaces()))
-                if (n.getName().contains("eth") || n.getName().contains("wlan") || n.getName().contains("net"))
+                if (n.getName().contains("eth") || n.getName().contains("wlan")
+                        || n.getName().contains("net") || n.getName().contains("ap"))
                     if (n.isUp() && !n.isLoopback() && !n.isVirtual())
                         for (InetAddress a : Collections.list(n.getInetAddresses()))
                             if (!a.isLinkLocalAddress() && !a.isLoopbackAddress())
