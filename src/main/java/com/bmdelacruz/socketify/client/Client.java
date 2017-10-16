@@ -2,6 +2,8 @@ package com.bmdelacruz.socketify.client;
 
 import com.bmdelacruz.socketify.commons.PendingData;
 import com.bmdelacruz.socketify.commons.SelectionKeyProcessor;
+import com.bmdelacruz.socketify.data.DataProcessor;
+import com.bmdelacruz.socketify.data.DataProcessorChain;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -24,6 +26,9 @@ public class Client {
 
     private Thread clientThread;
 
+    private DataProcessorChain readDataProcessorChain;
+    private DataProcessorChain writeDataProcessorChain;
+
     public interface Listener {
         void onDataReceived(byte[] data);
         void onServerDisconnect();
@@ -41,10 +46,16 @@ public class Client {
         this.bufferSize = bufferSize;
 
         socketAddress = new InetSocketAddress(address, portToConnectTo);
+        readDataProcessorChain = new DataProcessorChain();
+        writeDataProcessorChain = new DataProcessorChain();
     }
 
-    public SelectionKeyProcessor createSelectionKeyProcessor(int bufferSize) {
-        return new ClientSelectionKeyProcessor(bufferSize);
+    public void addReadDataProcessor(DataProcessor dataProcessor) {
+        readDataProcessorChain.addDataProcessor(dataProcessor);
+    }
+
+    public void addWriteDataProcessor(DataProcessor dataProcessor) {
+        writeDataProcessorChain.addDataProcessor(dataProcessor);
     }
 
     public final boolean isConnected() {
@@ -76,6 +87,8 @@ public class Client {
     public final void sendBytes(byte[] data) throws IOException {
         if (!isConnected()) return;
 
+        data = writeDataProcessorChain.process(data);
+
         ByteBuffer dataBuffer = (ByteBuffer) ByteBuffer.allocate(data.length + 1)
                 .put(data).put((byte) 0x00).flip();
         socketChannel.write(dataBuffer);
@@ -83,7 +96,43 @@ public class Client {
     }
 
     private void read(SelectionKey key) throws IOException {
-        createSelectionKeyProcessor(bufferSize).read(key);
+        SelectionKeyProcessor skp = new SelectionKeyProcessor() {
+            @Override
+            public List<byte[]> getPendingReadList(SelectionKey key) {
+                return pendingData.getPendingData();
+            }
+
+            @Override
+            public void processCompleteData(SelectionKey key, byte[] data) {
+                if (listener != null) {
+                    data = readDataProcessorChain.process(data);
+                    listener.onDataReceived(data);
+                }
+            }
+
+            @Override
+            public void onDisconnect(SelectionKey key) {
+                try {
+                    key.cancel();
+                    key.channel().close();
+
+                    if (listener != null)
+                        listener.onServerDisconnect();
+                } catch (IOException ignored) {}
+            }
+
+            @Override
+            public void onConnectionFailure(SelectionKey key) {
+                try {
+                    key.cancel();
+                    key.channel().close();
+
+                    if (listener != null)
+                        listener.onServerDisconnect();
+                } catch (IOException ignored) {}
+            }
+        };
+        skp.read(key);
     }
 
     private class ClientRunnable implements Runnable {
@@ -115,45 +164,6 @@ public class Client {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public class ClientSelectionKeyProcessor extends SelectionKeyProcessor {
-        public ClientSelectionKeyProcessor(int bufferSize) {
-            super(bufferSize);
-        }
-
-        @Override
-        public List<byte[]> getPendingReadList(SelectionKey key) {
-            return pendingData.getPendingData();
-        }
-
-        @Override
-        public void processCompleteData(SelectionKey key, byte[] data) {
-            if (listener != null)
-                listener.onDataReceived(data);
-        }
-
-        @Override
-        public void onDisconnect(SelectionKey key) {
-            try {
-                key.cancel();
-                key.channel().close();
-
-                if (listener != null)
-                    listener.onServerDisconnect();
-            } catch (IOException ignored) {}
-        }
-
-        @Override
-        public void onConnectionFailure(SelectionKey key) {
-            try {
-                key.cancel();
-                key.channel().close();
-
-                if (listener != null)
-                    listener.onServerDisconnect();
-            } catch (IOException ignored) {}
         }
     }
 }

@@ -2,6 +2,8 @@ package com.bmdelacruz.socketify.server;
 
 import com.bmdelacruz.socketify.commons.PendingData;
 import com.bmdelacruz.socketify.commons.SelectionKeyProcessor;
+import com.bmdelacruz.socketify.data.DataProcessor;
+import com.bmdelacruz.socketify.data.DataProcessorChain;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,6 +31,9 @@ public class Server {
     private HashMap<SocketChannel, PendingData> pendingWrites;
     private HashMap<SocketChannel, PendingData> pendingReads;
 
+    private DataProcessorChain readDataProcessorChain;
+    private DataProcessorChain writeDataProcessorChain;
+
     public interface Listener {
         void onClientConnect(ClientConnection clientConnection);
         void onClientMessageFailed(ClientConnection clientConnection, Exception e);
@@ -46,6 +51,16 @@ public class Server {
         this.bufferSize = bufferSize;
 
         serverAddress = new InetSocketAddress(port);
+        readDataProcessorChain = new DataProcessorChain();
+        writeDataProcessorChain = new DataProcessorChain();
+    }
+
+    public void addReadDataProcessor(DataProcessor dataProcessor) {
+        readDataProcessorChain.addDataProcessor(dataProcessor);
+    }
+
+    public void addWriteDataProcessor(DataProcessor dataProcessor) {
+        writeDataProcessorChain.addDataProcessor(dataProcessor);
     }
 
     /**
@@ -91,20 +106,19 @@ public class Server {
      * Sends the data to the specified ClientConnection.
      * @param clientConnection The client which will receive the data.
      * @param data The data to be transferred to the client.
-     * @return <code>true</code> if the data was sent to the client.
      * @throws InterruptedException Thrown when the server was stopped while trying to send the data.
      */
-    public boolean sendTo(ClientConnection clientConnection, byte[] data) throws InterruptedException {
+    public void sendTo(ClientConnection clientConnection, byte[] data) throws InterruptedException {
         SelectionKey key = getKeyFor(clientConnection.getSocketChannel());
         if (key != null) {
+            data = writeDataProcessorChain.process(data);
             sendTo(key, data);
-            return true;
         } else {
-            return false;
         }
     }
 
     public void multicast(byte[] data, MulticastCondition multicastCondition) throws InterruptedException {
+        data = writeDataProcessorChain.process(data);
         for (ClientConnection clientConnection : clientConnections.values()) {
             if (multicastCondition.isIncludedInMulticast(clientConnection)) {
                 sendTo(clientConnection, data);
@@ -113,6 +127,7 @@ public class Server {
     }
 
     public void broadcast(byte[] data) throws InterruptedException {
+        data = writeDataProcessorChain.process(data);
         for (ClientConnection clientConnection : clientConnections.values()) {
             sendTo(clientConnection, data);
         }
@@ -152,6 +167,7 @@ public class Server {
                 SocketChannel socketChannel = (SocketChannel) key.channel();
                 ClientConnection clientConnection = clientConnections.get(socketChannel);
 
+                data = readDataProcessorChain.process(data);
                 clientConnection.onDataReceived(data, new ServerMessenger(key));
             }
 
