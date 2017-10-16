@@ -34,6 +34,10 @@ public class Server {
         void onClientMessageFailed(ClientConnection clientConnection, Exception e);
     }
 
+    public interface MulticastCondition {
+        boolean isIncludedInMulticast(ClientConnection clientConnection);
+    }
+
     public Server(int port) {
         this(port, DEFAULT_BUFFER_SIZE);
     }
@@ -97,6 +101,14 @@ public class Server {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public void multicast(byte[] data, MulticastCondition multicastCondition) throws InterruptedException {
+        for (ClientConnection clientConnection : clientConnections.values()) {
+            if (multicastCondition.isIncludedInMulticast(clientConnection)) {
+                sendTo(clientConnection, data);
+            }
         }
     }
 
@@ -281,6 +293,28 @@ public class Server {
             if (data != null) {
                 try {
                     sendTo(key, data);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void multicast(byte[] data, MulticastCondition multicastCondition) {
+            if (data != null) {
+                try {
+                    Server.this.multicast(data, multicastCondition);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void broadcast(byte[] data) {
+            if (data != null) {
+                try {
+                    Server.this.broadcast(data);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

@@ -15,6 +15,8 @@ public class ClientConnection {
 
     public interface Messenger {
         void reply(byte[] data);
+        void multicast(byte[] data, Server.MulticastCondition multicastCondition);
+        void broadcast(byte[] data);
     }
 
     public ClientConnection(SocketChannel socketChannel) {
