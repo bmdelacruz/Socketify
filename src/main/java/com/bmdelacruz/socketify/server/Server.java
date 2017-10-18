@@ -26,6 +26,7 @@ public class Server {
 
     private Thread serverThread;
     private Selector selector;
+    private ServerSocketChannel serverSocketChannel;
 
     private HashMap<SocketChannel, ClientConnection> clientConnections;
     private HashMap<SocketChannel, PendingData> pendingWrites;
@@ -86,7 +87,7 @@ public class Server {
         pendingReads = new HashMap<>();
         selector = Selector.open();
 
-        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
         serverSocketChannel.socket().bind(serverAddress);
         serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -290,6 +291,7 @@ public class Server {
             }
 
             try {
+                serverSocketChannel.close();
                 selector.close();
             } catch (IOException e) {
                 e.printStackTrace();

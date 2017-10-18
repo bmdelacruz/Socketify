@@ -24,6 +24,7 @@ public class FindableServer extends Server {
 
     private Thread findableServerThread;
     private Selector selector;
+    private DatagramChannel datagramChannel;
 
     private HashMap<DatagramChannel, PendingData> pendingWrites;
     private Listener listener;
@@ -76,7 +77,7 @@ public class FindableServer extends Server {
     public void startDiscoverability() throws IOException {
         pendingWrites = new HashMap<>();
 
-        DatagramChannel datagramChannel = DatagramChannel.open(StandardProtocolFamily.INET)
+        datagramChannel = DatagramChannel.open()
                     .setOption(StandardSocketOptions.SO_REUSEADDR, true)
                     .bind(this.findableAddress);
         datagramChannel.configureBlocking(false);
@@ -174,6 +175,7 @@ public class FindableServer extends Server {
             }
 
             try {
+                datagramChannel.close();
                 selector.close();
             } catch (IOException e) {
                 e.printStackTrace();
