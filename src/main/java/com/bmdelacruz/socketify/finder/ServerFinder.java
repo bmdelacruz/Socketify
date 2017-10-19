@@ -87,6 +87,8 @@ public class ServerFinder {
                                     break;
                                 }
                             }
+
+                            socket.close();
                         }
                     });
                     readThread.start();

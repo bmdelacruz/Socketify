@@ -153,7 +153,7 @@ public class FindableServer extends Server {
         public void run() {
             while(!Thread.currentThread().isInterrupted()) {
                 try {
-                    selector.select();
+                    selector.select(100);
 
                     Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
                     while(keys.hasNext()) {

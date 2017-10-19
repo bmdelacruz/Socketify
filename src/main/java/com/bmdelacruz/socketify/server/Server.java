@@ -233,14 +233,14 @@ public class Server {
         }
 
         if (key.isValid())
-            key.interestOps(SelectionKey.OP_READ);
+            key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
     }
 
     private void sendTo(SelectionKey key, byte[] data) throws InterruptedException {
         if (!key.isValid())
             return;
 
-        key.interestOps(SelectionKey.OP_WRITE);
+        key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
         if (!pendingWrites.containsKey(socketChannel))
@@ -267,22 +267,16 @@ public class Server {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    selector.select();
+                    selector.select(100);
 
                     Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
                     while (keys.hasNext()) {
                         SelectionKey key = keys.next();
                         keys.remove();
 
-                        if (key.isValid()) {
-                            if (key.isAcceptable()) {
-                                accept(key);
-                            } else if (key.isReadable()) {
-                                read(key);
-                            } else if (key.isWritable()) {
-                                write(key);
-                            }
-                        }
+                        if (key.isValid() && key.isWritable()) write(key);
+                        if (key.isValid() && key.isAcceptable()) accept(key);
+                        if (key.isValid() && key.isReadable()) read(key);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -291,6 +285,10 @@ public class Server {
             }
 
             try {
+                for (SocketChannel sc : clientConnections.keySet()) sc.close();
+                clientConnections.clear();
+
+                serverSocketChannel.socket().close();
                 serverSocketChannel.close();
                 selector.close();
             } catch (IOException e) {
