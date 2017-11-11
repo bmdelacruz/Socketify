@@ -58,7 +58,8 @@ public class Utils {
                     if (n.isUp() && !n.isLoopback() && !n.isVirtual())
                         for (InetAddress a : Collections.list(n.getInetAddresses()))
                             if (!a.isLinkLocalAddress() && !a.isLoopbackAddress())
-                                return a;
+                                if (getBroadcastAddressOf(a) != null)
+                                    return a;
             return null;
         } catch (SocketException e) {
             e.printStackTrace();

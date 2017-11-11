@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class SessionsServerTester implements Runnable {
+class SessionsServerTester implements Runnable {
     public static void main(String[] args) {
         new Thread(new SessionsServerTester()).start();
     }
@@ -80,6 +80,8 @@ public class SessionsServerTester implements Runnable {
                 serverFinder.find(port, 1000, 5, dataStr.getBytes());
             } catch (NumberFormatException e) {
                 System.out.println("Invalid port number.\nCommand=\"" + input + "\"");
+            } catch (IllegalStateException e) {
+                System.out.println(e.getMessage() + "\nCommand=\"" + input + "\"");
             }
         } else if (input.startsWith("/connect")) {
             if (client != null) {

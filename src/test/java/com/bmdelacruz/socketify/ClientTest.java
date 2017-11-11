@@ -4,7 +4,7 @@ import com.bmdelacruz.socketify.client.Client;
 
 import java.io.IOException;
 
-public class ClientTest {
+class ClientTest {
 
     private static final String LOREM_IPSUM_1024 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pharetra urna et " +
             "diam condimentum, commodo vulputate sapien interdum. Donec id vehicula arcu. Donec hendrerit leo id ante condimentum" +

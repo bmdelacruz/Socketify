@@ -6,7 +6,7 @@ import com.bmdelacruz.socketify.server.Server;
 
 import java.io.IOException;
 
-public class ServerTest {
+class ServerTest {
     public static void main(String[] args) {
         try {
             FindableServer server = new FindableServer(10849, 10850, 512, 512);

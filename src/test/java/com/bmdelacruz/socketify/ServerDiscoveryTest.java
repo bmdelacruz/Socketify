@@ -8,7 +8,7 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class ServerDiscoveryTest {
+class ServerDiscoveryTest {
     public static void main(String[] args) throws IOException {
         final HashMap<String, byte[]> addresses = new HashMap<>();
 

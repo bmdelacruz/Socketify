@@ -30,6 +30,10 @@ public class ServerFinder {
 
         InetAddress localAddress = Utils.getLocalAddress();
         broadcastAddress = Utils.getBroadcastAddressOf(localAddress);
+
+        if (localAddress == null || broadcastAddress == null) {
+            throw new IllegalStateException("No valid local or broadcast address found.");
+        }
     }
 
     /**
